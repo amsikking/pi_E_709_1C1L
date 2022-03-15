@@ -34,13 +34,18 @@ class Controller:
         assert self.z_min == z_min_um, 'connected axis minimum !=  "z_min_um"'
         assert self.z_max == z_max_um, 'connected axis maximum !=  "z_min_um"'
         self.unit = 'um'
+        self._moving = False
+        self._analog_control = False
+        # move z to legal position if needed:
+        if self.z <= self.z_min + self.z_tol_um:
+            self.move_um(self.z_min + self.z_tol_um, relative=False)
+        if self.z >= self.z_max - self.z_tol_um:
+            self.move_um(self.z_max - self.z_tol_um, relative=False)
         # set state:
         self._set_servo_enable(True) # closed loop control
         self._set_analogue_control_limits = False
         self._send('CCL 1 advanced', respond=False) # need >= 'cmd level 1'
         self._send('SPA 1 0x06000500 0', respond=False) # disable analog
-        self._analog_control = False
-        self._moving = False
         if self.verbose:
             self._print_attributes()
         return None
@@ -234,7 +239,7 @@ class Controller:
         return None
     
 if __name__ == '__main__':
-    piezo = Controller('COM9', 0, 800, verbose=True, very_verbose=False)
+    piezo = Controller('COM3', 0, 800, verbose=True, very_verbose=False)
     # test developer functions:
 ##    piezo._get_cmd_list()
 ##    piezo._get_parameter_list()
